@@ -73,9 +73,10 @@ object Terminal {
     private fun showInfo() {
 
         println("Lazy Terminal")
-        println("Version 1.0.1")
+        println("Version 1.0.1-hotfix1")
         println("Made by happy_Nas")
         println("Made with Kotlin(Java 25)")
+        println("作者是xxs咕咕咕!")
 
     }
 }
