@@ -1,7 +1,6 @@
 import java.io.File
-import java.net.URL
-import java.net.URLClassLoader
 import java.lang.reflect.Constructor
+import java.net.URLClassLoader
 
 /**
  * 本地class文件加载管理器
@@ -27,17 +26,14 @@ object LocalClassLoader {
 
     /** 递归扫描所有.class文件并加载 */
     fun loadAllLocalClasses() {
-        println("\n[类加载] 开始扫描 $CLASS_DIR/ 目录")
+        Log.log("info", "Start to load all classes.")
         loadedClassMap.clear()
         instanceCache.clear()
 
         val classFiles = mutableListOf<File>()
         scanClassFile(rootDir, classFiles)
 
-        if (classFiles.isEmpty()) {
-            println("[类加载] 未找到任何.class文件")
-            return
-        }
+        if (classFiles.isEmpty()) {return}
 
         classFiles.forEach { file ->
             try {
@@ -50,7 +46,7 @@ object LocalClassLoader {
 
                 val clazz = classLoader!!.loadClass(className)
                 loadedClassMap[className] = clazz
-                println("[类加载] 成功载入类：$className")
+                Log.log("info", "Loaded class：$className.")
 
                 // 无参构造自动实例化存入缓存（Java原生反射，无需kotlin-reflect）
                 try {
@@ -58,17 +54,13 @@ object LocalClassLoader {
                     constructor.isAccessible = true
                     val instance = constructor.newInstance()
                     instanceCache[className] = instance
-                    println("[类加载] 自动实例化：$className")
-                } catch (_: NoSuchMethodException) {
-                    println("[类加载] $className 无空参构造，跳过自动实例化")
-                } catch (e: Exception) {
-                    println("[类加载] $className 实例化失败：${e.message}")
+                } catch (_: NoSuchMethodException) {} catch (e: Exception) {
+                    Log.log("error", "$className has some problems.")
                 }
             } catch (e: Exception) {
-                println("[类加载] 加载失败 ${file.name}: ${e.message}")
+                Log.log("error", "Can not load ${file.name}: ${e.message}")
             }
         }
-        println("[类加载] 类全部加载完成，共${loadedClassMap.size}个类")
     }
 
     /** 递归遍历目录收集.class */
@@ -99,7 +91,7 @@ object LocalClassLoader {
             ctor.isAccessible = true
             ctor.newInstance()
         } catch (e: Exception) {
-            println("[类加载] 动态创建 $className 实例失败：${e.message}")
+            Log.log("error", "$className has some problems.")
             null
         }
     }
